@@ -10,6 +10,7 @@ import com.booksefter.book_ledger.infra.aladin.dto.UsedList;
 import com.booksefter.book_ledger.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.stream.Stream;
 
 @Service
@@ -38,16 +39,16 @@ public class BookLookupService {
         book.setStatus(BookStatus.CHECKED);
         Book saved = bookRepository.save(book);
 
-        // 4. 알라딘배송/회원배송/우주점 중 최저가로 시장 시세 계산 (DB에는 저장하지 않고 응답에만 포함)
-        Integer marketPrice = resolveMarketPrice(item);
+        // 4. 알라딘배송/회원배송/우주점 중 최저가 채널 + 그 채널의 매물 링크 계산 (DB에는 저장하지 않고 응답에만 포함)
+        MarketPriceInfo marketPriceInfo = resolveMarketPrice(item);
 
-        return LookupResult.registered(saved, marketPrice);
+        return LookupResult.registered(saved, marketPriceInfo.price(), marketPriceInfo.link());
     }
 
-    private Integer resolveMarketPrice(AladinItem item) {
+    private MarketPriceInfo resolveMarketPrice(AladinItem item) {
         SubInfo subInfo = item.subInfo();
         if (subInfo == null || subInfo.usedList() == null) {
-            return null;
+            return new MarketPriceInfo(null, null);
         }
         UsedList usedList = subInfo.usedList();
 
@@ -56,8 +57,11 @@ public class BookLookupService {
             .filter(channel -> channel != null
                 && channel.itemCount() != null && channel.itemCount() > 0
                 && channel.minPrice() != null)
-            .map(UsedChannel::minPrice)
-            .min(Integer::compareTo)
-            .orElse(null);
+            .min(Comparator.comparingInt(UsedChannel::minPrice))
+            .map(channel -> new MarketPriceInfo(channel.minPrice(), channel.link()))
+            .orElse(new MarketPriceInfo(null, null));
     }
+
+    // 최저가와 그 가격을 준 채널의 매물 링크를 함께 담는 내부 전용 타입
+    private record MarketPriceInfo(Integer price, String link) {}
 }
