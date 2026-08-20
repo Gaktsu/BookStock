@@ -34,16 +34,6 @@ public class BookController {
         return bookRepository.findBySaleStatus(saleStatus);
     }
 
-    @PostMapping
-    public ResponseEntity<?> registerBook(@RequestBody Book book) {
-        if (bookRepository.existsById(book.getIsbn())) {
-            Book existing = bookRepository.findById(book.getIsbn()).get();
-            return ResponseEntity.status(409).body(existing); // 409 Conflict = 이미 등록됨
-        }
-        Book saved = bookRepository.save(book);
-        return ResponseEntity.ok(saved);
-    }
-
     // ISBN만 입력하면 알라딘 조회 + 중복 체크 + 자동 등록까지 한 번에 처리
     @PostMapping("/lookup/{isbn}")
     public ResponseEntity<?> lookupAndRegister(@PathVariable String isbn) {

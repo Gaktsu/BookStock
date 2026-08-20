@@ -34,13 +34,16 @@ public class BookLookupService {
         // 2. 알라딘 조회 (중고 시세 3채널 포함)
         AladinItem item = aladinApiClient.lookupByIsbn(isbn);
 
-        // 3. Book 엔티티로 변환 + 저장
+        // 3. Book 엔티티 생성 + 시세 확인 완료 표시
         Book book = new Book(isbn, item.title(), item.author(), item.cover(), item.priceStandard());
         book.setStatus(BookStatus.CHECKED);
-        Book saved = bookRepository.save(book);
 
-        // 4. 알라딘배송/회원배송/우주점 중 최저가 채널 + 그 채널의 매물 링크 계산 (DB에는 저장하지 않고 응답에만 포함)
+        // 4. 최저가 채널 + 링크 계산까지 정상적으로 끝나야 "내부 처리 완료"로 봄
         MarketPriceInfo marketPriceInfo = resolveMarketPrice(item);
+        book.markRegistered(); // 여기까지 무사히 왔으면 등록 완료 -> saleStatus도 이 시점에 NOT_LISTED로 정해짐
+
+        // 5. 최종 상태로 한 번만 저장
+        Book saved = bookRepository.save(book);
 
         return LookupResult.registered(saved, marketPriceInfo.price(), marketPriceInfo.link());
     }
