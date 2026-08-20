@@ -14,13 +14,13 @@ import org.springframework.web.client.RestClientException;
 @Component
 public class AladinApiClient {
     private final RestClient restClient;
-    private final ObjectMapper objectMapper;
+    //private final ObjectMapper objectMapper;
     private final String ttbKey;
 
-    public AladinApiClient(RestClient aladinRestClient, ObjectMapper aladinObjectMapper,
+    public AladinApiClient(RestClient aladinRestClient, /*ObjectMapper aladinObjectMapper,*/
                             @Value("${aladin.ttb-key}") String ttbKey) {
         this.restClient = aladinRestClient;
-        this.objectMapper = aladinObjectMapper;
+        //this.objectMapper = aladinObjectMapper;
         this.ttbKey = ttbKey;
     }
 

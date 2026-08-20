@@ -27,6 +27,10 @@ public class Book {
     @Enumerated(EnumType.STRING)
     private BookStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sale_status")
+    private SaleStatus saleStatus;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -41,10 +45,15 @@ public class Book {
         this.coverUrl = coverUrl;
         this.listPrice = listPrice;
         this.status = BookStatus.NEW;
+        this.saleStatus = SaleStatus.NOT_LISTED; // 서버 등록 시점엔 항상 "아직 어디에도 안 올림"부터 시작
         this.createdAt = LocalDateTime.now();
     }
 
     public void setStatus(BookStatus status) {
         this.status = status;
+    }
+
+    public void setSaleStatus(SaleStatus saleStatus) {
+        this.saleStatus = saleStatus;
     }
 }
