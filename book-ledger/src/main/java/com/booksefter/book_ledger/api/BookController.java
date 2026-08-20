@@ -1,10 +1,12 @@
 package com.booksefter.book_ledger.api;
 
 import com.booksefter.book_ledger.domain.Book;
+import com.booksefter.book_ledger.domain.PriceHistory;
 import com.booksefter.book_ledger.domain.SaleStatus;
 import com.booksefter.book_ledger.infra.aladin.AladinApiException;
 import com.booksefter.book_ledger.infra.aladin.AladinBookNotFoundException;
 import com.booksefter.book_ledger.repository.BookRepository;
+import com.booksefter.book_ledger.repository.PriceHistoryRepository;
 import com.booksefter.book_ledger.service.BookLookupService;
 import com.booksefter.book_ledger.service.LookupResult;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +21,13 @@ public class BookController {
 
     private final BookRepository bookRepository;
     private final BookLookupService bookLookupService;
+    private final PriceHistoryRepository priceHistoryRepository;
 
-    public BookController(BookRepository bookRepository, BookLookupService bookLookupService) {
+    public BookController(BookRepository bookRepository, BookLookupService bookLookupService,
+                           PriceHistoryRepository priceHistoryRepository) {
         this.bookRepository = bookRepository;
         this.bookLookupService = bookLookupService;
+        this.priceHistoryRepository = priceHistoryRepository;
     }
 
     // saleStatus 쿼리파라미터가 있으면 그 상태만, 없으면 전체 조회
@@ -62,6 +67,16 @@ public class BookController {
         book.setSaleStatus(request.saleStatus());
         Book saved = bookRepository.save(book);
         return ResponseEntity.ok(saved);
+    }
+
+    // 최신순으로 시세 변화 이력 조회
+    @GetMapping("/{isbn}/price-history")
+    public ResponseEntity<?> getPriceHistory(@PathVariable String isbn) {
+        if (!bookRepository.existsById(isbn)) {
+            return ResponseEntity.notFound().build();
+        }
+        List<PriceHistory> history = priceHistoryRepository.findByIsbnOrderByCheckedAtDesc(isbn);
+        return ResponseEntity.ok(history);
     }
 
     @DeleteMapping("/{isbn}")
