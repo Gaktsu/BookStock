@@ -17,12 +17,10 @@ public class PriceHistory {
     @Column(nullable = false)
     private String isbn;
 
-    private String source; // 예: ALADIN_USED
-
-    private Integer price; // 최저가
+    private Integer price; // 그 시점의 최저가
 
     @Column(name = "avg_price")
-    private Integer avgPrice; // 매물 있는 채널들의 최저가 평균
+    private Integer avgPrice; // 그 시점까지 쌓인 최저가들의 누적 평균
 
     @Column(name = "checked_at")
     private LocalDateTime checkedAt;
@@ -30,9 +28,8 @@ public class PriceHistory {
     protected PriceHistory() {
     }
 
-    public PriceHistory(String isbn, String source, Integer price, Integer avgPrice) {
+    public PriceHistory(String isbn, Integer price, Integer avgPrice) {
         this.isbn = isbn;
-        this.source = source;
         this.price = price;
         this.avgPrice = avgPrice;
         this.checkedAt = LocalDateTime.now();
